@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI Control Baker</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="row" style="justify-content:space-between">
+    <h1>🎮 UI Control Baker</h1>
+    <span class="muted" id="compInfo">comp: —</span>
+  </div>
+
+  <div class="row">
+    <label>Comp W</label><input type="number" id="cw" value="1080">
+    <label>H</label><input type="number" id="ch" value="1920">
+    <label>FPS</label><input type="number" id="fps" value="30">
+    <button id="btnRefresh" title="Đọc comp đang mở trong AE">↻ Đọc comp</button>
+  </div>
+
+  <div class="stage-wrap">
+    <iframe id="stage" sandbox="allow-scripts allow-same-origin allow-pointer-lock"></iframe>
+  </div>
+
+  <div class="row">
+    <button class="rec" id="btnRec">● Ghi</button>
+    <button id="btnPlay" disabled>▶ Xem lại</button>
+    <button id="btnClear" disabled>Xoá</button>
+    <span class="muted"><span class="dot" id="recDot"></span><span id="recLabel">Chưa ghi</span></span>
+  </div>
+
+  <div class="row">
+    <button class="primary" id="btnLoad">↧ Nạp HTML vào sân khấu</button>
+    <button class="bake" id="btnBake" disabled>⬤ Bake vào comp (layer + keyframe)</button>
+  </div>
+
+  <details>
+    <summary>Dán code HTML control (phần tử điều khiển gắn <code>data-ae</code>)</summary>
+    <div class="hint" style="margin:6px 0">
+      Mỗi phần tử muốn thành 1 layer: thêm <code>data-ae="tên"</code>.
+      Muốn dùng ảnh sprite thật trong AE: thêm <code>data-ae-img="/đường/dẫn/tuyệt/đối.png"</code>
+      (không có ảnh → AE tạo solid đỏ để bạn thay sau). Bọc sân khấu bằng phần tử
+      <code>data-ae-stage</code> đúng kích thước comp để map toạ độ chuẩn.
+    </div>
+    <textarea id="code"></textarea>
+  </details>
+
+  <div id="log"></div>
+
+  <script id="demo" type="text/plain">
+<div data-ae-stage style="position:relative;width:1080px;height:1920px;transform-origin:top left">
+  <div id="base" data-ae="joy_base"
+       style="position:absolute;left:340px;top:1300px;width:400px;height:400px;border-radius:50%;
+              border:6px solid rgba(255,255,255,.35);box-shadow:0 0 40px rgba(255,255,255,.15)"></div>
+  <div id="knob" data-ae="joy_knob"
+       style="position:absolute;left:470px;top:1430px;width:140px;height:140px;border-radius:50%;
+              background:radial-gradient(circle at 38% 32%,#fff,#c9ccd4 60%,#9a9da6);
+              box-shadow:0 6px 18px rgba(0,0,0,.6)"></div>
+  <div id="atk" data-ae="btn_attack"
+       style="position:absolute;left:820px;top:1440px;width:170px;height:170px;border-radius:50%;
+              background:radial-gradient(circle at 40% 35%,#ff8a5b,#e5391f);color:#fff;font:700 34px sans-serif;
+              display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.5)">ATK</div>
+</div>
+<script>
+  // logic control của BẠN — extension chỉ quan sát DOM, không cần sửa gì ở đây
+  var base=document.getElementById('base'), knob=document.getElementById('knob'), atk=document.getElementById('atk');
+  var cx=540, cy=1500, R=170, kw=70;         // tâm base + bán kính chạy
+  var dragging=false;
+  function place(x,y){var dx=x-cx,dy=y-cy,d=Math.hypot(dx,dy);if(d>R){dx=dx/d*R;dy=dy/d*R;}
+    knob.style.left=(cx+dx-kw)+'px';knob.style.top=(cy+dy-kw)+'px';}
+  function toStage(e){var s=document.querySelector('[data-ae-stage]').getBoundingClientRect();
+    var k=1080/s.width;return [(e.clientX-s.left)*k,(e.clientY-s.top)*k];}
+  document.addEventListener('pointerdown',function(e){var p=toStage(e);
+    if(Math.hypot(p[0]-cx,p[1]-cy)<R+80){dragging=true;place(p[0],p[1]);}});
+  document.addEventListener('pointermove',function(e){if(dragging){var p=toStage(e);place(p[0],p[1]);}});
+  document.addEventListener('pointerup',function(){dragging=false;place(cx,cy);});
+  atk.addEventListener('pointerdown',function(){atk.style.transform='scale(.85)';atk.style.opacity='.7';});
+  atk.addEventListener('pointerup',function(){atk.style.transform='scale(1)';atk.style.opacity='1';});
+  atk.addEventListener('pointerleave',function(){atk.style.transform='scale(1)';atk.style.opacity='1';});
+<\/script>
+  </script>
+
+  <script src="js/CSInterface.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
